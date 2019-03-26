@@ -1,5 +1,14 @@
-import jsonPlaceholder from './../apis/jsonPlaceholder';
 import _ from 'lodash';
+import jsonPlaceholder from './../apis/jsonPlaceholder';
+
+export const fetchPostAndUsers = () => async (dispatch, getState) => {
+  // Busca posts
+  await dispatch(fetchPosts());
+  // Define quais são os userIds unicos
+  const userIds = _.uniq(_.map(getState().posts, 'userId'));
+  // Dá dispatch em uma action para cada userId
+  userIds.forEach(id => dispatch(fetchUser(id)));
+};
 
 export const fetchPosts = () => async dispatch => {
   const response = await jsonPlaceholder.get('/posts');
@@ -10,15 +19,11 @@ export const fetchPosts = () => async dispatch => {
   });
 };
 
-export const fetchUser = id => dispatch => {
-  _fetchUser(id, dispatch);
-};
-
-const _fetchUser = _.memoize(async (id, dispatch) => {
+export const fetchUser = id => async dispatch => {
   const response = await jsonPlaceholder.get(`/users/${id}`);
 
   return dispatch({
     type: 'FETCH_USER',
     payload: response.data,
   });
-});
+};
